@@ -1,62 +1,66 @@
-import  { Component } from 'react';
-import { Statistics } from './Statistics/Statistics';
-import { Section } from './Section/Section';
-import { FeedbackOptions } from './FeedbackOptions/FeedbackOptions';
-import { Notification } from './Notification/Notification';
+import React, { Component } from "react";
+import { nanoid } from 'nanoid';
+import ContactForm from "./ContactForm/ContactForm";
+import ContactList from "./ContactList/ContactList";
+import Filter from "./Filter/Filter";
 
- export class App extends Component {
+export class App extends Component {
   state = {
-    good: 0,
-    neutral: 0,
-    bad: 0,
-  };
+    contacts: [],
+    filter: '',
+  }
 
-  countTotalFeedback = state => {
-    return Object.values(state).reduce((prev, el) => prev + el, 0);
-  };
+  setContacts = ({name, number}) => {
+    const {contacts} = this.state;
+    const newContact = {
+      id: nanoid(),
+      name,
+      number,
+    };
 
-  countPositiveFeedbackPercentage = (good, total) => {
-    const positivePercentage = Math.round((good / total) * 100);
-    return isNaN(positivePercentage) ? 0 : positivePercentage;
-  };
+    if (contacts.some(c => c.name === name)) {
+      alert(`${name} is already in contacts`);
+    } else if ((contacts.some(c => c.number === number))) {
+      const contactWithNumber = contacts.filter(c => c.number === number);
+      alert(`Number ${contactWithNumber[0].number} is already in phonebook. It belongs to ${contactWithNumber[0].name}.`);
+    } else {
+      this.setState(({contacts}) => ({
+        contacts: [newContact, ...contacts],
+      }));
+    }
+  }
 
-  feedbackIncrementHandler = e => {
-    this.feedbackIncrement(e.target.innerHTML);
-  };
+  setFilter = (evt) => {
+    const value = evt.target.value.toLowerCase();
+    this.setState(({filter: value}));
+  }
 
-  feedbackIncrement = key => {
-    this.setState(state => ({ [key]: state[key] + 1 }));
-  };
+  getContacts = () => {
+    const {contacts, filter} = this.state;
+    return contacts.filter(c => c.name.toLowerCase().includes(filter)).sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  deleteContact = (id) => () => {
+    this.setState(({contacts}) => ({contacts: contacts.filter(c => c.id !== id)}));
+  }
 
   render() {
-    const { good, neutral, bad } = this.state;
-    const total = this.countTotalFeedback(this.state);
-    const positive = this.countPositiveFeedbackPercentage(good, total);
-    const btn = Object.keys(this.state);
+    const getContacts = this.getContacts();
+
     return (
       <>
-        <Section title="Please leave feedback">
-          <FeedbackOptions
-            options={btn}
-            onLeaveFeedback={this.feedbackIncrementHandler}
-          />
-        </Section>
-
-        <Section title="Statistics">
-          {total !== 0 ? (
-            <Statistics
-              good={good}
-              neutral={neutral}
-              bad={bad}
-              total={total}
-              positive={positive}
-            />
-          ) : (
-            <Notification message="There is no feedback" />
-          )}
-        </Section>
+        <h1>Phonebook</h1>
+        <ContactForm
+          setContacts={this.setContacts}
+        />
+        <h2>Contacts</h2>
+        <Filter setFilter={this.setFilter}/>
+        <ContactList
+          contacts={getContacts}
+          deleteContact={this.deleteContact}
+        />
       </>
-    );
+    )
   }
 }
 

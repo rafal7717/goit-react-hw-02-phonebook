@@ -1,0 +1,30 @@
+.item {
+  &:not(:last-child) {
+    margin-bottom: 5px;
+  }
+}
+
+.wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.btn {
+ 
+  height: 18px;
+  margin-left: 5px;
+  border: 1px solid rgb(49, 49, 49);
+  border-radius: 25%;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 8px;
+
+
+}
+
+.link {
+  @extend .btn;
+  background-size: 10px;
+
+
+}
